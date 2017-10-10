@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+  {{template "header" .}}
+
+  <body>
+	<!-- topbar starts -->
+	{{template "topbar" .}}
+	<!-- topbar ends -->
+
+	<div class="ch-container">
+	  <div class="row">
+
+		<!-- left menu starts -->
+		{{template "left_menu" .}}
+		<!-- left menu ends -->
+
+		<div id="content" class="col-lg-10 col-sm-10">
+		  <!-- content starts -->
+		  <div>
+			<ul class="breadcrumb" style="margin-bottom:0">
+			  <li>
+				<a href="{{.BasePath}}">首页</a>
+			  </li>
+			  <li>
+				<a href="{{.BasePath}}projects">项目管理</a>
+			  </li>
+			  <li>
+				<a href="{{.BasePath}}project/edit/{{.Project.ID}}">修改项目</a>
+			  </li>
+			</ul>
+		  </div>
+
+		  <div class="row">
+			<div class="box col-md-12">
+			  <div class="box-inner">
+				<div class="box-header well" data-original-title="">
+				  <h2>修改项目</h2>
+				</div>
+				<div class="box-content">
+				  
+				  <div class="alert alert-warning hide" id="alert" role="alert">...</div>
+				  
+				  <form class="form-horizontal">
+					<input type="hidden" id="id" name="id" value="{{.Project.ID}}">
+					<div class="form-group">
+					  <label for="name" class="col-sm-2 control-label">名称</label>
+					  <div class="col-sm-8">
+						<input type="text" class="form-control" id="name" name="name" value="{{.Project.Name}}" placeholder="项目名称">
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <label for="clusterId" class="col-sm-2 control-label">机器组</label>
+					  <div class="col-sm-8">
+						<select class="form-control" name="clusterId" id="clusterId">
+						  <option value="">请选择</option>
+						  {{range .Clusters}}
+						  <option value="{{.ID}}"{{if eq .ID $.Project.ClusterId}} selected="selected"{{end}}>{{.Name}}</option>
+						  {{end}}
+						</select>
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <label for="rootDir" class="col-sm-2 control-label">项目根目录</label>
+					  <div class="col-sm-8">
+						<input type="text" class="form-control" id="rootDir" name="rootDir" value="{{.Project.RootDir}}" placeholder="项目根目录">
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <label for="cmdScript" class="col-sm-2 control-label">cmd.script脚本</label>
+					  <div class="col-sm-8">
+						<input type="text" class="form-control" id="cmdScript" name="cmdScript" value="{{.Project.CmdScript}}" placeholder="cmd.script脚本">
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <label for="curTag" class="col-sm-2 control-label">当前tag</label>
+					  <div class="col-sm-8">
+						<input type="text" class="form-control" id="curTag" name="curTag" value="{{.Project.CurTag}}" placeholder="当前tag">
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <label for="preTag" class="col-sm-2 control-label">回滚tag</label>
+					  <div class="col-sm-8">
+						<input type="text" class="form-control" id="preTag" name="preTag" value="{{.Project.PreTag}}" placeholder="回滚tag">
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <div class="col-sm-offset-2 col-sm-10">
+					    <button type="button" id="submit" class="btn btn-primary">提 交</button>
+					  </div>
+					</div>
+				  </form>
+				</div>
+			  </div>
+			</div>
+		  </div><!--/span-->
+
+		  <!-- content ends -->
+		</div><!--/#content.col-md-0-->
+	  </div><!--/fluid-row-->
+
+	  <hr>
+
+	  {{template "footer"}}
+
+	</div><!--/.fluid-container-->
+
+	{{template "scripts" .}}
+
+	<script type="text/javascript">
+	$(document).ready(function(){
+	    $("#submit").click(function() {
+	        var data = {};
+
+	        if ($("#id").val() == "") {
+	            $("#alert").removeClass("hide");
+	            $("#alert").html("缺少参数id")
+	            return
+	        }
+	        if ($("#name").val() == "") {
+	            $("#alert").removeClass("hide");
+	            $("#alert").html("名称不能为空！");
+	            return
+	        }
+	        if ($("#clusterId").val() == "") {
+	            $("#alert").removeClass("hide");
+	            $("#alert").html("必须选择所属机器组！")
+	            return
+	        }
+	        if ($("#rootDir").val() == "") {
+	            $("#alert").removeClass("hide");
+	            $("#alert").html("项目根目录为空！")
+	            return
+	        }
+			if ($("#cmdScript").val() == "") {
+	            $("#alert").removeClass("hide");
+	            $("#alert").html("cmd.script脚本为空！")
+	            return
+	        }
+	        $("#alert").addClass("hide")
+
+	        data.id = $("#id").val();
+	        data.name = $("#name").val();
+	        data.clusterId = $("#clusterId").val();
+	        data.rootDir = $("#rootDir").val();
+			data.cmdScript = $("#cmdScript").val();
+	        data.curTag = $("#curTag").val();
+	        data.preTag = $("#preTag").val();
+
+	        var url = "{{.BasePath}}project/modify";
+	        $.ajax({
+	            url: url,
+	            type: "post",
+	            dataType: "json",
+	            data: data,
+	            timeout: 5000,
+	            success: function(data, textStatus, xhr){
+	                console.log(data);
+	                console.log(textStatus);
+	                console.log(xhr.status);
+	                if (data.errcode == 0) {
+	                    window.location.href="{{.BasePath}}projects";
+	                } else {
+	                    $("#alert").removeClass("hide");
+	                    $("#alert").html(data.errmsg);
+	                }
+	            },
+                error: function(xhr) {
+	                console.log(xhr.status);
+	                console.log(xhr.responseText);
+	                $("#alert").removeClass("hide");
+	                $("#alert").html(xhr.responseText);
+	            }
+	        });
+	    });
+	})
+	</script>
+
+  </body>
+</html>

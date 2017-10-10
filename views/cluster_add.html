@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+  {{template "header" .}}
+
+  <body>
+	<!-- topbar starts -->
+	{{template "topbar" .}}
+	<!-- topbar ends -->
+
+	<div class="ch-container">
+	  <div class="row">
+
+		<!-- left menu starts -->
+		{{template "left_menu" .}}
+		<!-- left menu ends -->
+
+		<div id="content" class="col-lg-10 col-sm-10">
+		  <!-- content starts -->
+		  <div>
+			<ul class="breadcrumb" style="margin-bottom:0">
+			  <li>
+				<a href="{{.BasePath}}">首页</a>
+			  </li>
+			  <li>
+				<a href="{{.BasePath}}minions">机器组管理</a>
+			  </li>
+			  <li>
+				<a href="{{.BasePath}}minion/add">新建机器组</a>
+			  </li>
+			</ul>
+		  </div>
+
+		  <div class="row">
+			<div class="box col-md-12">
+			  <div class="box-inner">
+				<div class="box-header well" data-original-title="">
+				  <h2>新建机器组</h2>
+				</div>
+				<div class="box-content">
+				  
+				  <div class="alert alert-warning hide" id="alert" role="alert">...</div>
+				  
+				  <form class="form-horizontal">
+					<div class="form-group">
+					  <label for="name" class="col-sm-2 control-label">机器组名称</label>
+					  <div class="col-sm-8">
+						<input type="text" class="form-control" id="name" name="name" placeholder="机器组名称">
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <label for="minions" class="col-sm-2 control-label">选择Minion</label>
+					  <div class="col-sm-8">
+						{{range .Minions}}
+						<label class="checkbox-inline">
+					      <input type="checkbox" name="minions" value="{{.ID}}"> {{.Name}}
+						</label>
+						{{end}}
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <div class="col-sm-offset-2 col-sm-10">
+					    <button type="button" id="submit" class="btn btn-primary">提 交</button>
+					  </div>
+					</div>
+				  </form>
+				</div>
+			  </div>
+			</div>
+		  </div><!--/span-->
+
+		  <!-- content ends -->
+		</div><!--/#content.col-md-0-->
+	  </div><!--/fluid-row-->
+
+	  <hr>
+
+	  {{template "footer"}}
+
+	</div><!--/.fluid-container-->
+
+	{{template "scripts" .}}
+
+  </body>
+</html>
+
+<script type="text/javascript">
+$("#submit").on("click", function() {
+	if ($("#name").val() == "") {
+		$("#alert").removeClass("hide");
+		$("#alert").html("名称不能为空！");
+		return
+	}
+	var minions = new Array();
+	$("input[name='minions']:checked").each(function(){
+		minions.push($(this).val());
+	});
+	if (minions.length == 0) {
+		$("#alert").removeClass("hide");
+	    $("#alert").html("Minion不能为空！")
+	    return
+    }
+    $("#alert").addClass("hide")
+
+	var data = {};
+    data.name = $("#name").val();
+	data.minions = minions.join(",");
+	console.log(data)
+
+	var url = "{{.BasePath}}cluster/save";
+	$.ajax({
+		url: url,
+	    type: "post",
+	    dataType: "json",
+	    data: data,
+	    timeout: 5000,
+	    success: function(data, textStatus, xhr){
+			console.log(data);
+	        console.log(textStatus);
+	        console.log(xhr.status);
+	        if (data.errcode == 0) {
+				window.location.href="{{.BasePath}}clusters";
+	        } else {
+	            $("#alert").removeClass("hide");
+	            $("#alert").html(data.errmsg);
+	        }
+	    },
+        error: function(xhr) {
+			console.log(xhr.status);
+	        console.log(xhr.responseText);
+	        $("#alert").removeClass("hide");
+	        $("#alert").html(xhr.responseText);
+	    }
+	});
+});
+</script>

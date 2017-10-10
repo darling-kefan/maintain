@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+  {{template "header" .}}
+
+  <body>
+	<!-- topbar starts -->
+	{{template "topbar" .}}
+	<!-- topbar ends -->
+
+	<div class="ch-container">
+	  <div class="row">
+
+		<!-- left menu starts -->
+		{{template "left_menu" .}}
+		<!-- left menu ends -->
+
+		<div id="content" class="col-lg-10 col-sm-10">
+		  <!-- content starts -->
+		  <div>
+			<ul class="breadcrumb" style="margin-bottom:0">
+			  <li>
+				<a href="{{.BasePath}}">首页</a>
+			  </li>
+			  <li>
+				<a href="{{.BasePath}}clusters">机器组管理</a>
+			  </li>
+			</ul>
+		  </div>
+
+		  <div class="row">
+			<div class="box col-md-12">
+			  <div class="box-inner">
+				<div class="box-header well" data-original-title="">
+				  <h2>机器组管理</h2>
+
+				  <div class="box-icon">
+					<a href="#" class="btn btn-minimize btn-round btn-default"><i class="glyphicon glyphicon-chevron-up"></i></a>
+					<a href="{{.BasePath}}cluster/add" class="btn btn-round btn-default"><i class="glyphicon glyphicon-plus"></i></a>
+				  </div>
+				</div>
+				<div class="box-content">
+				  <div class="alert alert-warning hide" id="alert" role="alert">...</div>
+				  <table class="table table-striped">
+					<thead>
+					  <tr>
+						<th class="text-center">ID</th>
+						<th class="text-center">机器组名称</th>
+						<th class="text-center">更新时间</th>
+						<th class="text-center">操作</th>
+					  </tr>
+					</thead>
+					<tbody>
+					  {{range .Clusters}}
+					  <tr>
+						<td class="text-center">{{.ID}}</td>
+						<td class="text-center">{{.Name}}</td>
+						<td class="text-center">{{formatDate .UpdatedAt "2006-01-02 15:04:05"}}</td>
+						<td class="text-center"><a href="{{$.BasePath}}cluster/edit/{{.ID}}">修改</a> | <a href="javascript:void(0)" ref="{{$.BasePath}}cluster/delete/{{.ID}}" class="cluster-delete">删除</a></td>
+					  </tr>
+					  {{end}}
+					</tbody>
+				  </table>
+				</div>
+			  </div>
+			</div>
+		  </div><!--/span-->
+
+		  <!-- content ends -->
+		</div><!--/#content.col-md-0-->
+	  </div><!--/fluid-row-->
+
+	  <hr>
+
+	  {{template "footer"}}
+
+	</div><!--/.fluid-container-->
+
+	{{template "scripts" .}}
+
+	<script type="text/javascript">
+	  $(document).ready(function(){
+	  $("a.cluster-delete").each(function() {
+	    $(this).click(function() {
+	        var url = $(this).attr("ref");
+	        $.ajax({
+	            url: url,
+	            type: "get",
+	            timeout: 5000,
+	            success: function(data, textStatus, xhr){
+	                console.log(data);
+	                console.log(textStatus);
+	                console.log(xhr.status);
+	                if (data.errcode == 0) {
+	                    window.location.href="{{.BasePath}}clusters";
+	                } else {
+	                    $("#alert").removeClass("hide");
+	                    $("#alert").html(data.errmsg);
+	                }
+	            },
+                error: function(xhr) {
+	                console.log(xhr.status);
+	                console.log(xhr.responseText);
+	                $("#alert").removeClass("hide");
+	                $("#alert").html(xhr.responseText);
+	            }
+	        });
+	    });
+	  });
+	  })
+	</script>
+
+  </body>
+</html>

@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+  {{template "header" .}}
+
+  <body>
+	<div class="ch-container">
+	  <div class="row">
+
+		<div class="row">
+		  <div class="col-md-12 center login-header">
+			<h2>欢迎使用上线发布系统</h2>
+		  </div>
+		  <!--/span-->
+		</div><!--/row-->
+
+		<div class="row">
+		  <div class="well col-md-5 center login-box">
+			<div id="prompt-box" class="alert alert-danger hide"></div>
+			<form class="form-horizontal" id="form" method="post">
+			  <fieldset>
+				<div class="input-group input-group-lg">
+				  <span class="input-group-addon"><i class="glyphicon glyphicon-user red"></i></span>
+				  <input type="text" name="username" class="form-control" placeholder="用户名">
+				</div>
+				<div class="clearfix"></div><br>
+
+				<div class="input-group input-group-lg">
+				  <span class="input-group-addon"><i class="glyphicon glyphicon-lock red"></i></span>
+				  <input type="password" name="password" class="form-control" placeholder="密码">
+				</div>
+				<div class="clearfix"></div>
+				<!--
+				<div class="input-prepend">
+				  <label class="remember" for="remember"><input type="checkbox" id="remember"> 记住我</label>
+				</div>
+				<div class="clearfix"></div>
+				-->
+				<p class="center col-md-5">
+				  <button type="button" id="submit" class="btn btn-primary">登录</button>
+				</p>
+			  </fieldset>
+			</form>
+		  </div>
+		  <!--/span-->
+		</div><!--/row-->
+	  </div><!--/fluid-row-->
+
+	</div><!--/.fluid-container-->
+
+	{{template "scripts" .}}
+
+  </body>
+</html>
+
+<script type="text/javascript">
+	$("#submit").on("click", function() {
+		var $username = $("input[name='username']");
+		var $password = $("input[name='password']");
+		var $prompt = $("#prompt-box");
+
+		var msg = new Array();
+		if ($username.val() == "") {
+			msg.push("用户名不能为空！");
+		}
+		if ($password.val() == "") {
+			msg.push("密码不能为空！");
+		}
+		if (msg.length > 0) {
+			$prompt.removeClass("hide");
+			$prompt.html(msg.join("；"));
+		}
+
+		var data = {};
+		data.username = $username.val();
+		data.password = $password.val();
+
+		var url = "{{.BasePath}}login";
+		$.ajax({
+			url: url,
+			type: "post",
+			dataType: "json",
+			data: data,
+			timeout: 10000,
+			success: function(data, textStatus, xhr){
+				console.log(data);
+				if (data.errcode == 0) {
+					window.location.href="{{.BasePath}}";
+				} else {
+					$prompt.removeClass("hide");
+					$prompt.html(data.errmsg);
+				}
+			},
+			error: function(xhr) {
+				$prompt.removeClass("hide");
+				$prompt.html(xhr.responseText);
+			}
+		});
+	});
+</script>

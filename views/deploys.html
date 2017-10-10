@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+  {{template "header" .}}
+
+  <body>
+	<!-- topbar starts -->
+	{{template "topbar" .}}
+	<!-- topbar ends -->
+
+	<div class="ch-container">
+	  <div class="row">
+
+		<!-- left menu starts -->
+		{{template "left_menu" .}}
+		<!-- left menu ends -->
+
+		<div id="content" class="col-lg-10 col-sm-10">
+		  <!-- content starts -->
+		  <div>
+			<ul class="breadcrumb" style="margin-bottom:0">
+			  <li>
+				<a href="{{.BasePath}}">首页</a>
+			  </li>
+			  <li>
+				<a href="{{.BasePath}}deploy">生产部署</a>
+			  </li>
+			</ul>
+		  </div>
+
+		  <div class="row">
+			<div class="box col-md-12">
+			  <div class="box-inner">
+				<div class="box-header well" data-original-title="">
+				  <h2>生产部署</h2>
+				</div>
+				<div class="box-content">
+				  <style type="text/css">
+					#proj-loading {
+					width:100px;
+					height:45px;
+					position:absolute;
+					top:110px;
+					left:500px;
+					z-index:10000;
+					line-height:25px;
+					text-align:center;
+					vertical-align:middle;
+					font-size:11pt;
+					display:none;
+					}
+			      </style>
+				  <div id="proj-loading"><img src="{{.BasePath}}resources/img/ajax-loaders/ajax-loader-4.gif" alt=""/></div>
+				  
+				  <div class="alert alert-danger hide" id="alert" role="alert"></div>
+				  
+	              <form class="form-horizontal">
+					<input type="hidden" name="preTag" value="">
+	                <input type="hidden" name="latestTag" value="">
+					<input type="hidden" name="toTag" value="">
+					<input type="hidden" name="onTag" value="">
+					<div class="form-group">
+					  <label for="clusterId" class="col-sm-2 control-label">项目</label>
+					  <div class="col-sm-8">
+						<select class="form-control" name="projectId" id="projectId">
+						  <option value="">请选择</option>
+						  {{range .Projects}}
+						  <option value="{{.ID}}">{{.Name}}</option>
+						  {{end}}
+						</select>
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <label class="col-sm-2 control-label">部署tag</label>
+					  <div class="col-sm-8">
+						  <label class="radio-inline">
+						    <input type="radio" name="mode" id="mode1" value="1" checked="checked"> 最新tag
+						  </label>
+						  <label class="radio-inline">
+						    <input type="radio" name="mode" id="mode2" value="2"> 回退tag
+						  </label>
+						  <label class="radio-inline">
+						    <input type="radio" name="mode" id="mode3" value="3"> 其它tag
+           			      </label>
+					  </div>
+				    </div>
+					<div class="form-group hide" id="tag-select-div">
+					  <div class="col-sm-offset-2 col-sm-8">
+						<select class="form-control" name="otag" id="otag">
+						  <option value="">请选择tag</option>
+						</select>
+					  </div>
+				    </div>
+					<div class="form-group hide" id="tag-checked-div">
+					  <label for="rootDir" class="col-sm-2 control-label">当前线上Tag</label>
+					  <div class="col-sm-8">
+						<p class="form-control-static"><span class="label label-success" id="fromTag">-</span>&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>&nbsp;&nbsp;&nbsp;<span class="label label-danger" id="toTag">~</span></p>
+					  </div>
+				    </div>
+					<div class="form-group">
+					  <div class="col-sm-offset-2 col-sm-10">
+						<button type="button" id="prompt" class="btn btn-primary" data-toggle="modal" data-target="#myModal" disabled>提 交</button>
+						<button type="button" id="reset" class="btn btn-default">重 置</button>
+					  </div>
+					</div>
+				  </form>
+
+				  <hr>
+
+				  <div class="panel panel-default" id="console">
+					<!-- Default panel contents -->
+					<div class="panel-heading">日志输出</div>
+					<div class="panel-body">
+					  <div class="text-center" style="display:none;" id="console-output"><img src="{{.BasePath}}resources/img/ajax-loaders/ajax-loader-7.gif" alt=""/></div>
+				    </div>
+				  </div>
+			  </div>
+			</div>
+		  </div><!--/span-->
+
+		  <!-- content ends -->
+		</div><!--/#content.col-md-0-->
+	  </div><!--/fluid-row-->
+
+	  <hr>
+
+	  <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			  <h4 class="modal-title">生产部署提示</h4>
+			</div>
+			<div class="modal-body text-center"><p><span id="projectDialog">adcoud-v2</span> 将由 <span style="color:blue" id="fromTagDialog">v0.1.3</span> 部署为 <span style="color:red; font-weight:bold;" id="toTagDialog">v0.1.2</span>，确定要部署吗？</p></div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+			  <button type="button" id="submit" class="btn btn-primary">确定</button>
+			</div>
+		  </div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	  </div><!-- /.modal -->
+	  
+	  {{template "footer"}}
+
+	</div><!--/.fluid-container-->
+	  
+	{{template "scripts" .}}
+
+  </body>
+</html>
+
+<script type="text/javascript">
+$('#myModal').on('shown.bs.modal', function (event) {
+	//var button = $(event.relatedTarget) // Button that triggered the modal
+	//var recipient = button.data('whatever') // Extract info from data-* attributes
+	//var modal = $(this)
+	//modal.find('.modal-title').text('New message to ' + recipient)
+	//modal.find('.modal-body input').val(recipient)
+})
+  
+$(document).ready(function(){
+	$("input[name='mode']").attr("disabled", true);
+	$("#tag-checked-div").addClass("hide");
+})
+
+function renderEcho(data) {
+	var retData = data.data;
+	var ret = "";
+	$.each(retData, function(k, v){
+		ret += '<div class="list-group">';
+		ret += '  <h5 class="list-group-item-heading">'+k+'</h5>';
+		ret += '  <p class="list-group-item-text">';
+		ret += '    <span style="font-weight:bold;">pid</span>: '+v.pid+'<br />';
+		ret += '    <span style="font-weight:bold;">retcode</span>: '+v.retcode+'<br />';
+		ret += '    <span style="font-weight:bold;">stderr</span>: '+v.stderr+'<br />';
+		ret += '    <span style="font-weight:bold;">stdout</span>: '+v.stdout+'<br />';
+		ret += '  </p>';
+		ret += '</div>';
+	});
+	$("#console .panel-body").html(ret);
+}
+
+$("#submit").on("click", function() {
+	$("#myModal").modal("hide");
+
+	if ($("#projectId").val() == "") {
+		$("#alert").removeClass("hide");
+	    $("#alert").html("请选择要部署的项目！");
+	    return
+    }
+    if ($("input[name='toTag']").val() == "") {
+		$("#alert").removeClass("hide");
+	    $("#alert").html("请选择部署tag！")
+	    return
+    }
+	$("#alert").addClass("hide")
+
+	var data = {};
+	data.projectId = $("#projectId").val();
+	data.toTag = $("input[name='toTag']").val();
+	data.onTag = $("input[name='onTag']").val();
+	console.log(data);
+
+	var url = "{{.BasePath}}deployExec";
+	$.ajax({
+		url: url,
+	    type: "post",
+	    dataType: "json",
+	    data: data,
+	    timeout: 300000,
+		beforeSend: function() {
+			$("#console-output").show();
+		},
+	    success: function(data, textStatus, xhr){
+			console.log(data);
+	        console.log(textStatus);
+	        console.log(xhr.status);
+			$("#console-output").hide();
+			$("#prompt").attr("disabled", true);
+	        if (data.errcode == 0) {
+				renderEcho(data);
+	        } else {
+	            $("#alert").removeClass("hide");
+	            $("#alert").html(data.errmsg);
+	        }
+	    },
+        error: function(xhr) {
+	        console.log(xhr.status);
+	        console.log(xhr.responseText);
+			$("#console-output").hide();
+	        $("#alert").removeClass("hide");
+	        $("#alert").html(xhr.responseText);
+	    }
+	});
+});
+
+$("#projectId").on("change", function() {
+    var projectId = $(this).val();
+    if (projectId != "") {
+		$("#projectDialog").html($(this).find("option:selected").text());
+        var url = "{{.BasePath}}deployInfo?projectId="+projectId;
+        $.ajax({
+	        url: url,
+	        type: "get",
+            timeout: 30000,
+
+            beforeSend: function() {
+				$("#proj-loading").show();
+				$("#projectId").attr("disabled", true);
+			},
+
+	        success: function(ret, textStatus, xhr){
+	            console.log(ret);
+	            console.log(textStatus);
+	            console.log(xhr.status);
+				if (ret.errcode == 0) {
+					$("input[name='mode']").attr("disabled", false);
+					$("#tag-checked-div").removeClass("hide");
+					$("#prompt").attr("disabled", false);
+
+					var data = ret.data;
+					$("input[name='preTag']").val(data.Project.PreTag);
+					$("input[name='latestTag']").val(data.LatestTag);
+					$("input[name='toTag']").val(data.LatestTag);
+					$("input[name='onTag']").val(data.OnTag);
+					if (data.OnTag == "") {
+						$("#fromTag").html("-");
+						$("#fromTagDialog").html("-");
+					} else {
+						$("#fromTag").html(data.OnTag);
+						$("#fromTagDialog").html(data.OnTag);
+					}
+					$("#toTag").html(data.LatestTag);
+					$("#toTagDialog").html(data.LatestTag);
+					$("#otag").html("");
+					$("#otag").append("<option value=\"\">请选择tag</option>");
+					$.each(data.Tags, function(i, t){
+						$("#otag").append("<option value='"+t+"'>"+t+"</option>");
+					});
+				} else {
+					$("input[name='mode']").attr("disabled", true);
+					$("#tag-checked-div").addClass("hide");
+					$("#proj-loading").hide();
+					$("#projectId").attr("disabled", false);
+
+	                $("#alert").removeClass("hide");
+                    $("#alert").html(ret.errmsg);
+
+					$("input[name='preTag']").val("");
+					$("input[name='latestTag']").val("");
+					$("input[name='toTag']").val("");
+					$("input[name='onTag']").val("");
+
+					$("#tag-checked-div").addClass("hide");
+					$("#otag").html("");
+					$("#otag").append("<option value=''>请选择tag</option>");
+	            }
+			},
+
+			complete: function() {
+				$("#proj-loading").hide();
+				$("#projectId").attr("disabled", false);
+			},
+
+			error: function(xhr) {
+
+				$("input[name='mode']").attr("disabled", true);
+				$("#tag-checked-div").addClass("hide");
+
+				$("#proj-loading").hide();
+				$("#projectId").attr("disabled", false);
+
+				console.log(xhr.status);
+	            console.log(xhr.responseText);
+				$("#alert").removeClass("hide");
+				if (typeof xhr.responseText == "undefined") {
+					$("#alert").html("Please check the salt-api interface is reachable, or others.");
+				}else{
+					$("#alert").html(xhr.responseText);
+				}
+
+				$("input[name='preTag']").val("");
+				$("input[name='latestTag']").val("");
+				$("input[name='toTag']").val("");
+				$("input[name='onTag']").val("");
+				
+				$("#tag-checked-div").addClass("hide");
+				$("#otag").html("");
+				$("#otag").append("<option value=\"\">请选择tag</option>");
+	        }
+	    });
+
+    } else {
+        $("input[name='mode']").attr("disabled", true);
+		$("#tag-checked-div").addClass("hide");
+		$("#proj-loading").hide();
+		$("#projectId").attr("disabled", false);
+		$("#prompt").attr("disabled", true);
+    }
+});
+
+$("input[name='mode']").on("click", function() {
+    if ($(this).val() == 3) {
+        $("#tag-select-div").removeClass("hide");
+    } else if ($(this).val() == 2) {
+        $("#tag-select-div").addClass("hide");
+		$("input[name='toTag']").val($("input[name='preTag']").val());
+		if ($("input[name='preTag']").val() == "") {
+			$("#toTag").html($("input[name='latestOBTag']").val());
+			$("#toTagDialog").html($("input[name='latestOBTag']").val());
+		} else {
+			$("#toTag").html($("input[name='preTag']").val());
+			$("#toTagDialog").html($("input[name='preTag']").val());
+		}
+    } else if ($(this).val() == 1) {
+		$("#tag-select-div").addClass("hide");
+		$("input[name='toTag']").val($("input[name='latestTag']").val());
+		$("#toTag").html($("input[name='latestTag']").val());
+		$("#toTagDialog").html($("input[name='latestTag']").val());
+	}
+});
+
+$("#otag").on("click", function() {
+	if ($(this).val() != "") {
+		$("input[name='toTag']").val($(this).val());
+		$("#toTag").html($(this).val());
+		$("#toTagDialog").html($(this).val());
+	}
+});
+
+$("#reset").on("click", function() {
+	window.location.href="{{.BasePath}}deploys";
+});
+</script>

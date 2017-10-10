@@ -1,0 +1,15 @@
+        {{define "left_menu"}}
+        <div class="col-sm-2 col-lg-2">
+		  <div class="sidebar-nav">
+			<div class="nav-canvas">
+			  <ul class="nav nav-pills nav-stacked main-menu">
+				<li><a class="ajax-link" href="{{.BasePath}}"><i class="glyphicon glyphicon-home"></i><span> 首页</span></a></li>
+				<li><a class="ajax-link" href="{{.BasePath}}deploys"><i class="glyphicon glyphicon-edit"></i><span> 生产部署</span></a></li>
+				<li><a class="ajax-link" href="{{.BasePath}}projects" class="active"><i class="glyphicon glyphicon-list-alt"></i><span> 项目管理</span></a></li>
+				<li><a class="ajax-link" href="{{.BasePath}}clusters"><i class="glyphicon glyphicon-align-justify"></i><span> 机器组管理</span></a></li>
+				<li><a class="ajax-link" href="{{.BasePath}}minions"><i class="glyphicon glyphicon-th"></i><span> Minion管理</span></a></li>
+			  </ul>
+			</div>
+		  </div>
+		</div>
+		{{end}}
